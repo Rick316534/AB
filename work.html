@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nill</title>
+</head>
+<body>
+    <form action="work.php" method="get">
+        <label for="Reply">請輸入四個數字</label>
+        <input type="text" id="Reply" name="Reply" oninput = "value=value.replace(/[^\d]/g,'');for(i=0; i<this.value.length; i++) if(this.value.replace(this.value[i],'').indexOf(this.value[i]) > -1) {alert('有重复了');this.value=''}" required="required"  maxlength="4">
+	<input  type="button" id="btn" value="送出" >
+    </form>
+	<h1>結果</h1>
+    	<h2 class="answer"></h2>
+</body>
+<script src="work.js"></script>
+</html>
