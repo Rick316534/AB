@@ -7,13 +7,21 @@
     <title>nill</title>
 </head>
 <body>
-    <form action="work.php" method="get">
-        <label for="Reply">請輸入四個數字</label>
-        <input type="text" id="Reply" name="Reply"  required="required"  maxlength="4">
-        <input  type="button" id="btn" value="送出" >
-    </form>
-        <h1>結果</h1>
-        <h2 class="answer"></h2>
+    <label for="Reply">請輸入四個數字</label>
+    <input type="text" id="Reply" name="Reply"  maxlength="4">
+    <input type="button" id="btn" value="送出" >
+    <div style="display: flex;"> 
+        <div style="padding-right: 48px;">
+            <h2>結果</h2>
+            <h2 id="answer">_A_B</h2>
+        </div>
+        <div>
+             <h2>歷史紀錄</h2>
+             <h2 id="history"></h2>   
+        </div>
+    </div>
+    
+    
 </body>
 <script src="AB.js"></script>
 </html>
