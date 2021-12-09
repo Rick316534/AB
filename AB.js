@@ -29,7 +29,6 @@ btn.addEventListener("click", function(){
             answer.innerText = this.responseText;
 
         }
-        console.log(this.responseText);
         topicReset = false;
 
     }
