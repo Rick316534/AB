@@ -5,14 +5,15 @@ let reset = document.getElementById("reset");
 let historicalRecord=document.getElementById("history");
 let jsn; //
 let phpArray; //
-let topicReset=true;
+let topicReset = true;
 reset.addEventListener("click",function(){
     topicReset = true;
     answer.innerText = "";
     historicalRecord.innerText = "";
+    reply.value = "";
 })
 btn.addEventListener("click", function(){
-    jsn=JSON.stringify({"reply":reply.value,"topicReset":topicReset});
+    jsn = JSON.stringify({"reply":reply.value,"topicReset":topicReset});
     let xhr = new XMLHttpRequest();
     xhr.open('post','AB.php');
     xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
@@ -29,7 +30,7 @@ btn.addEventListener("click", function(){
 
         }
         console.log(this.responseText);
-        topicReset=false;
+        topicReset = false;
 
     }
 })
