@@ -7,8 +7,9 @@
     <title>nill</title>
 </head>
 <body>
-    <label for="Reply">請輸入四個數字</label>
-    <input type="text" id="Reply" name="Reply"  maxlength="4">
+    <label for="reply">請輸入四個數字</label>
+    <input type="text" id="reply" oninput = "value=value.replace(/[^\d]/g,'')" name="reply"  maxlength="4">
+    <input type="button" id="reset" value="重置">
     <input type="button" id="btn" value="送出" >
     <div style="display: flex;"> 
         <div style="padding-right: 48px;">

@@ -1,99 +1,141 @@
 <?php
-//-------------------------------- if you want change user , open this
-include_once("config.php");
-mysqli_query($link, 'SET NAMES utf8');
-//-------------------------------------------- get value..
-$input=file_get_contents('php://input');                                                   
-$A_num=0;$B_num=0;
-$Reply = json_decode($input) -> {'reply'} ;
-$num = json_decode($input) -> {'num'} ;
-$rangestr =json_decode($input) -> {'rangestr'};
-//--------sql
-$sql_delete = "delete from `history`";
-$sql_select="select * from `history`";
 
-//--------------------------------------------------- set a topic 
-if($rangestr==1){
-    $rangestr = 0;
-    mysqli_query($link,$sql_delete);
-    $Range=array();
-    $count=3;
-    for($i=0;$i<=$count;$i++){
-        $number=rand(0,9);
-        if($Range[0]=="" && $number==0)
-                $i--;
-        elseif(in_array($number,$Range))
-                $i--;
-        else
-            $Range[$i]=$number;
-    }
-    $num = 1;
-    $sql ="insert into `history`(topic,rangestr) values(\"".$Range[0].$Range[1].$Range[2].$Range[3]."\",\"".$rangestr."\")";
-    $result = mysqli_query($link,$sql);
-}
-//-------------------------------------------------- check a reply is ok
-$result = mysqli_query($link,$sql_select);
-$row=mysqli_fetch_assoc($result);
-$length = strlen($Reply);
-if($length==0)
-    echo "未填入數字!";
-elseif($length<4)
-    echo "不能少於四個數";
-elseif($length>4)
-    echo "不能多於四個數";
-else{
-    for($i=-4;$i<0;$i++){
-        $topic_num[$i]=substr($row["topic"],$i,1);
-        $Reply_num[$i]=substr($Reply,$i,1);
-    }
-    if($length!=count(array_unique($Reply_num)))
-        echo "數字重複";
-    elseif($Reply_num[0]=="0")
-        echo "開頭不能為0";
-    else{
-        //--------------------------------------------------- answer
-        for($i=-4;$i<0;$i++){
-            if($Reply_num[$i]==$topic_num[$i])
-                $A_num+=1;
-            elseif(in_array($Reply_num[$i],$topic_num))
-                $B_num+=1;
+// 執行並列印結果 
+print main(); 
+
+
+// main
+function main() 
+{
+    $sessionPath = "/var/www/html/session" ; // 設定存取位置
+    $sessionId = "AB";                       // 設定sessionID
+    $input = file_get_contents('php://input');  // 接值
+    
+    try {
+        // 判斷接值是否成功
+        if ($input != null) {
+            $reply = json_decode($input) -> {'reply'}; // 取得猜數
+            $topicReset = json_decode($input) -> {'topicReset'}; // 題目是否重置
+        } else {
+            throw new Exception("傳值失敗");
         }
-        if($A_num==4)
-            $rangestr=1;
-        $sql_insert ="insert into `history`(num,replied,result,topic,rangestr) values(\"".$num."\",\"".$Reply."\",\"". $A_num."A".$B_num."B"."\",\"".$row["topic"]."\",\"".$rangestr."\")";
-        mysqli_query($link,$sql_insert);
-        $result = mysqli_query($link,$sql_select);
-        if($result){
-            while($row = mysqli_fetch_assoc($result)){
-                $datas[]=$row;
-            }
-        }   
-        $jsn = $datas;
-        echo json_encode($jsn);
+        // 判斷猜數是否合法,如果通過將拆解後的輸入丟出，供遊戲判斷使用
+        $replyNum = replyJudge($reply); //猜數拆解後的容器
+         // 建立Session
+         sessionSet($sessionPath, $sessionId);
+         // 判斷session建立
+         if (!Session_Id()) {
+             throw new Exception("Session設定失敗");
+         } 
+        // 題目重新設定並清空歷史
+        if ($topicReset) {
+            session_unset();
+            $topic = topic();
+        } else {
+            $topic = $_SESSION["topic"];
+        }
+        // 判斷_A_B,並給出結果
+        $result = gameResult($replyNum, $topic);
+        print_r(json_encode (array('history' => $_SESSION["history"] , 'result' => $result["answerA"] . "A" . $result["answerB"] . "B" )));
+        // 判斷是否4A
+        history($topic,$reply,$result);
         
+        
+        
+
+    } catch (Exception $e) {
+        return  $e->getMessage();
     }
+
 }
-mysqli_close($link);
+
+// 判斷猜數是否合法
+function replyJudge($reply) 
+{
+    $replyLength = strlen($reply); // 取的猜數字串長度
+    $regularExpression = array('0','1','2','3','4','5','6','7','8','9'); // 允許的猜數輸入值
+    $replyNum = preg_split('//', $reply, -1,PREG_SPLIT_NO_EMPTY); // 猜數拆解
+    try {
+        // (1)判斷猜數長度
+        if ( $replyLength != 4) {
+            throw new Exception("請輸入四個數字");
+        }
+        // (2)將猜數的字串拆解做正規判斷
+        foreach ($replyNum as $value) {
+            if (! in_array($value,$regularExpression)) {
+                throw new Exception("僅能輸入數字");
+            }
+        }
+        // (3)判斷猜數開頭不能為零
+        if ($replyNum["0"] == "0") {
+            throw new Exception("開頭不能為零");
+        }
+        // (4)判斷猜數內有無重複數字
+        if ($replyLength != count(array_unique($replyNum))) {
+            throw new Exception("不能重複數字");
+        } 
+        // 判斷成功
+        return $replyNum ;
+
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage());
+
+    }
+     
+}
+
+// 設定題目
+function topic()
+{   
+    $topic = array();
+    $count = 3;
+    for($i = 0 ; $i <= $count ; $i++){
+        $number = rand(0,9);
+        if ($topic[0] == "" && $number == 0){
+            $i--;
+        } elseif (in_array($number,$topic)){   
+            $i--;
+        } else {
+            $topic[$i]=$number;
+        }
+    }
+    return $topic;
+} 
+
+// 判斷遊戲結果
+function gameResult($replyNum, $topic) 
+{
+    $answerA = 0;
+    $answerB = 0;
+    for ($i = 0 ; $i < 4 ; $i++) {
+        if ($replyNum[$i] == $topic[$i]) {
+            $answerA += 1;
+        } elseif (in_array($replyNum[$i] , $topic)) {
+            $answerB += 1;
+        }
+    }
+    return array("answerA" => $answerA , "answerB" => $answerB);
+}
+
+// 啟動Session
+function sessionSet($path, $id) 
+{
+    Session_Save_Path($path);  // 設定存取位置
+    Session_Id($id); // 設定sessionID
+    Session_Start(); 
+};
 
 
-
-
-       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// 紀錄
+function history($topic,$reply,$result) 
+{
+    if (!$_SESSION["topic"]) {
+        $_SESSION["history"] =  "輸入" . $reply . "結果是" . $result["answerA"] . "A" . $result["answerB"] . "B" . "\n";
+        $_SESSION["topic"] = $topic;
+        
+    } else {
+        $_SESSION["history"] .= "輸入" . $reply . "結果是" . $result["answerA"] . "A" . $result["answerB"] . "B" . "\n"; 
+    }
+    
+}
 
