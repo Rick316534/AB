@@ -37,11 +37,8 @@ function main()
         // 判斷_A_B,並給出結果
         $result = gameResult($replyNum, $topic);
         print_r(json_encode (array('history' => $_SESSION["history"] , 'result' => $result["answerA"] . "A" . $result["answerB"] . "B" )));
-        // 判斷是否4A
+
         history($topic,$reply,$result);
-        
-        
-        
 
     } catch (Exception $e) {
         return  $e->getMessage();
