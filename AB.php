@@ -1,7 +1,7 @@
 <?php
 
 // 執行並列印結果 
-print main(); 
+main(); 
 
 
 // main
@@ -36,12 +36,12 @@ function main()
         }
         // 判斷_A_B,並給出結果
         $result = gameResult($replyNum, $topic);
-        print_r(json_encode (array('history' => $_SESSION["history"] , 'result' => $result["answerA"] . "A" . $result["answerB"] . "B" )));
+        print_r(json_encode(array('history' => $_SESSION["history"] , 'result' => $result["answerA"] . "A" . $result["answerB"] . "B" )));
 
         history($topic,$reply,$result);
 
     } catch (Exception $e) {
-        return  $e->getMessage();
+        print  $e->getMessage();
     }
 
 }

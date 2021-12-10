@@ -15,21 +15,24 @@ reset.addEventListener("click",function(){
 btn.addEventListener("click", function(){
     jsn = JSON.stringify({"reply":reply.value,"topicReset":topicReset});
     let xhr = new XMLHttpRequest();
-    xhr.open('post','AB.php');
-    xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
-    xhr.send(jsn);
-    xhr.onload = function() 
-    {
-        try {
-            phpArray = JSON.parse(this.responseText);
-            historicalRecord.innerText = phpArray['history'];
-            answer.innerText = phpArray['result'];
-
-        } catch(e) { 
-            answer.innerText = this.responseText;
-
+    try {
+        xhr.open('post','AB.php');
+        xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+        xhr.send(jsn);
+        xhr.onload = function() 
+        {
+            try {
+                phpArray = JSON.parse(this.responseText);
+                historicalRecord.innerText = phpArray['history'];
+                answer.innerText = phpArray['result'];
+                topicReset = false;
+            } catch(e) { 
+                answer.innerText = this.responseText;
+            }
+            
         }
-        topicReset = false;
+
+    } catch (e) {
 
     }
 })
